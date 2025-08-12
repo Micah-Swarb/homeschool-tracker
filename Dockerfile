@@ -26,7 +26,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 
 # Copy built frontend files to Flask static directory
-COPY --from=frontend-builder /app/frontend/dist ./src/static
 
 # Create uploads directory
 RUN mkdir -p ./src/uploads
