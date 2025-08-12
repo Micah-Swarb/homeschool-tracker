@@ -58,9 +58,10 @@ cp .env.example .env
 Edit the `.env` file with your settings:
 ```env
 DB_PASSWORD=your_secure_password
-APP_PORT=8080
-SECRET_KEY=your-secret-key-here
-JWT_SECRET_KEY=your-jwt-secret-here
+APP_PORT=3256
+SECRET_KEY=734a6aca97e252e46973241d80e4eda4c6d626e91f9c019442951be6e60eb1e2
+JWT_SECRET_KEY=233ce7b87d1c5af4a930c2f701bdb69eec6ec94bb3beb537c3ed36d5e1e7d546
+CORS_ORIGINS=http://localhost:3000
 ```
 
 ### 3. Deploy with Docker Compose
@@ -68,10 +69,10 @@ JWT_SECRET_KEY=your-jwt-secret-here
 docker-compose up -d
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:3256`
 
 ### 4. Access the Application
-- Open your browser to `http://localhost:8080`
+- Open your browser to `http://localhost:3256`
 - Create your first teacher account
 - Start adding students and assignments
 
@@ -83,9 +84,10 @@ The application will be available at `http://localhost:8080`
 3. Copy the contents of `docker-compose.yml`
 4. Set environment variables in the Portainer interface:
    - `DB_PASSWORD`: Your database password
-   - `APP_PORT`: Port to expose (default: 8080)
-   - `SECRET_KEY`: Application secret key
+   - `APP_PORT`: Port to expose (default: 3256)
+   - `SECRET_KEY`: Application secret key (32+ chars)
    - `JWT_SECRET_KEY`: JWT secret key
+   - `CORS_ORIGINS`: Allowed CORS origins
 5. Deploy the stack
 
 ### Using Portainer App Templates
@@ -115,13 +117,19 @@ npm install
 npm run dev
 ```
 
+### Running Tests
+```bash
+pytest
+```
+
 ## Configuration
 
 ### Environment Variables
 - `DB_PASSWORD`: Database password for PostgreSQL
-- `APP_PORT`: Port for the application (default: 8080)
-- `SECRET_KEY`: Flask secret key for sessions
+- `APP_PORT`: Port for the application (default: 3256)
+- `SECRET_KEY`: Flask secret key for sessions (32+ chars)
 - `JWT_SECRET_KEY`: Secret key for JWT tokens
+- `CORS_ORIGINS`: Comma-separated list of allowed CORS origins
 - `DATABASE_URL`: Full database connection string
 - `FLASK_ENV`: Environment (production/development)
 - `MAX_CONTENT_LENGTH`: Maximum file upload size
@@ -246,7 +254,7 @@ docker-compose up -d
 - Clear browser cache
 
 ### Health Checks
-Visit `http://localhost:8080/api/health` to check application status.
+Visit `http://localhost:3256/api/health` to check application status.
 
 ## Contributing
 

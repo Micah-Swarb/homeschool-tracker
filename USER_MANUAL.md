@@ -13,7 +13,7 @@
 ## Getting Started
 
 ### First Time Setup
-1. **Access the Application**: Open your web browser and navigate to your Homeschool Hub URL (typically `http://localhost:8080` for local installations)
+1. **Access the Application**: Open your web browser and navigate to your Homeschool Hub URL (typically `http://localhost:3256` for local installations)
 
 2. **Create Your Account**: 
    - Click on the "Sign Up" tab
