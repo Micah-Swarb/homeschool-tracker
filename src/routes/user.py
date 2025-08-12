@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request, session
-from werkzeug.security import check_password_hash
+from flask import Blueprint, jsonify, session
 from src.models import db, User
 from functools import wraps
+from src.utils.request_utils import get_json_data
 
 user_bp = Blueprint('user', __name__)
 
@@ -23,13 +23,11 @@ def get_current_user():
 @user_bp.route('/auth/register', methods=['POST'])
 def register():
     """Register a new user."""
-    data = request.json
-    
-    # Validate required fields
-    required_fields = ['username', 'email', 'password', 'first_name', 'last_name']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'error': f'{field} is required'}), 400
+    data, error, status = get_json_data(
+        ['username', 'email', 'password', 'first_name', 'last_name']
+    )
+    if error:
+        return error, status
     
     # Check if user already exists
     if User.query.filter_by(username=data['username']).first():
@@ -65,10 +63,9 @@ def register():
 @user_bp.route('/auth/login', methods=['POST'])
 def login():
     """Login user."""
-    data = request.json
-    
-    if not data.get('username') or not data.get('password'):
-        return jsonify({'error': 'Username and password are required'}), 400
+    data, error, status = get_json_data(['username', 'password'])
+    if error:
+        return error, status
     
     # Find user by username or email
     user = User.query.filter(
@@ -105,7 +102,9 @@ def get_current_user_info():
 def update_current_user():
     """Update current user information."""
     user = get_current_user()
-    data = request.json
+    data, error, status = get_json_data()
+    if error:
+        return error, status
     
     # Update allowed fields
     if 'first_name' in data:
@@ -131,10 +130,9 @@ def update_current_user():
 def change_password():
     """Change user password."""
     user = get_current_user()
-    data = request.json
-    
-    if not data.get('current_password') or not data.get('new_password'):
-        return jsonify({'error': 'Current password and new password are required'}), 400
+    data, error, status = get_json_data(['current_password', 'new_password'])
+    if error:
+        return error, status
     
     if not user.check_password(data['current_password']):
         return jsonify({'error': 'Current password is incorrect'}), 400
