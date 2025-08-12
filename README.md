@@ -117,6 +117,11 @@ npm install
 npm run dev
 ```
 
+### Running Tests
+```bash
+pytest
+```
+
 ## Configuration
 
 ### Environment Variables
