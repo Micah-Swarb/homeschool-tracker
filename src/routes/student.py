@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request, session
-from src.models import db, Student, User
+from flask import Blueprint, jsonify, request
+from src.models import db, Student
 from src.routes.user import login_required, get_current_user
-from datetime import datetime, date
+from datetime import datetime
+from src.utils.request_utils import get_json_data
 
 student_bp = Blueprint('student', __name__)
 
@@ -18,13 +19,9 @@ def get_students():
 def create_student():
     """Create a new student."""
     current_user = get_current_user()
-    data = request.json
-    
-    # Validate required fields
-    required_fields = ['first_name', 'last_name', 'date_of_birth', 'grade_level']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'error': f'{field} is required'}), 400
+    data, error, status = get_json_data(['first_name', 'last_name', 'date_of_birth', 'grade_level'])
+    if error:
+        return error, status
     
     # Parse date of birth
     try:
@@ -72,7 +69,9 @@ def update_student(student_id):
     """Update student information."""
     current_user = get_current_user()
     student = Student.query.filter_by(id=student_id, user_id=current_user.id).first_or_404()
-    data = request.json
+    data, error, status = get_json_data()
+    if error:
+        return error, status
     
     # Update allowed fields
     if 'first_name' in data:

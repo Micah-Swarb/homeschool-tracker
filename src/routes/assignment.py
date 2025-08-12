@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request
 from src.models import db, Assignment, Grade, Student, Subject, Submission
 from src.routes.user import login_required, get_current_user
 from datetime import datetime, date
+from src.utils.request_utils import get_json_data
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -42,13 +43,9 @@ def get_assignments():
 def create_assignment():
     """Create a new assignment."""
     current_user = get_current_user()
-    data = request.json
-    
-    # Validate required fields
-    required_fields = ['student_id', 'title']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'error': f'{field} is required'}), 400
+    data, error, status = get_json_data(['student_id', 'title'])
+    if error:
+        return error, status
     
     # Verify student belongs to current user
     student = Student.query.filter_by(id=data['student_id'], user_id=current_user.id).first()
@@ -124,7 +121,9 @@ def update_assignment(assignment_id):
         Student.user_id == current_user.id
     ).first_or_404()
     
-    data = request.json
+    data, error, status = get_json_data()
+    if error:
+        return error, status
     
     # Update allowed fields
     if 'title' in data:
@@ -193,11 +192,9 @@ def grade_assignment(assignment_id):
         Student.user_id == current_user.id
     ).first_or_404()
     
-    data = request.json
-    
-    # Validate required fields
-    if 'points_earned' not in data:
-        return jsonify({'error': 'points_earned is required'}), 400
+    data, error, status = get_json_data(['points_earned'])
+    if error:
+        return error, status
     
     points_earned = data['points_earned']
     if points_earned < 0 or points_earned > assignment.points_total:
@@ -263,7 +260,9 @@ def update_assignment_grade(assignment_id):
     if not assignment.grade:
         return jsonify({'error': 'Assignment not graded yet'}), 404
     
-    data = request.json
+    data, error, status = get_json_data()
+    if error:
+        return error, status
     grade = assignment.grade
     
     # Update grade fields

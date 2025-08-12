@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from src.models import db, Subject
 from src.routes.user import login_required, get_current_user
-from datetime import datetime
+from src.utils.request_utils import get_json_data
 
 subject_bp = Blueprint('subject', __name__)
 
@@ -18,11 +18,9 @@ def get_subjects():
 def create_subject():
     """Create a new subject."""
     current_user = get_current_user()
-    data = request.json
-    
-    # Validate required fields
-    if not data.get('name'):
-        return jsonify({'error': 'Subject name is required'}), 400
+    data, error, status = get_json_data(['name'])
+    if error:
+        return error, status
     
     # Check if subject name already exists for this user
     existing_subject = Subject.query.filter_by(
@@ -62,7 +60,9 @@ def update_subject(subject_id):
     """Update subject information."""
     current_user = get_current_user()
     subject = Subject.query.filter_by(id=subject_id, user_id=current_user.id).first_or_404()
-    data = request.json
+    data, error, status = get_json_data()
+    if error:
+        return error, status
     
     # Update allowed fields
     if 'name' in data:

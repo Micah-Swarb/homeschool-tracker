@@ -1,5 +1,6 @@
 import os
 import sys
+import secrets
 from dotenv import load_dotenv
 from flask import Flask, send_from_directory, jsonify
 
@@ -10,6 +11,7 @@ load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask_cors import CORS
+from flask_migrate import Migrate
 from src.models import db
 from src.routes.user import user_bp
 from src.routes.student import student_bp
@@ -25,7 +27,10 @@ from src.models import (
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
 # Configuration with environment variable support
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'homeschool-hub-secret-key-change-in-production')
+secret_key = os.getenv('SECRET_KEY')
+if not secret_key or len(secret_key) < 32:
+    secret_key = secrets.token_hex(32)
+app.config['SECRET_KEY'] = secret_key
 
 # Database configuration - support both PostgreSQL and SQLite
 database_url = os.getenv('DATABASE_URL')
@@ -40,8 +45,9 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB
 
-# Enable CORS for all routes
-CORS(app, origins="*")
+# Enable CORS for configured origins
+allowed_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
+CORS(app, origins=allowed_origins)
 
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/api')
@@ -51,6 +57,7 @@ app.register_blueprint(subject_bp, url_prefix='/api')
 
 # Initialize database
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # Health check endpoint for Docker
 @app.route('/api/health')
@@ -71,10 +78,6 @@ def health_check():
             'error': str(e)
         }), 503
 
-# Create all database tables
-with app.app_context():
-    db.create_all()
-
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
@@ -93,4 +96,4 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=3256, debug=True)
