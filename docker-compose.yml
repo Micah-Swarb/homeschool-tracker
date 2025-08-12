@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: homeschool-hub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: homeschool_hub
+      POSTGRES_USER: homeschool_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password_123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - homeschool-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homeschool_user -d homeschool_hub"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Homeschool Hub Application
+  app:
+    build: .
+    container_name: homeschool-hub-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://homeschool_user:${DB_PASSWORD:-secure_password_123}@db:5432/homeschool_hub
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-this-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key-change-this}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - homeschool-network
+    volumes:
+      - app_uploads:/app/src/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  app_uploads:
+    driver: local
+
+networks:
+  homeschool-network:
+    driver: bridge
+
