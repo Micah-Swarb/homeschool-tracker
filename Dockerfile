@@ -1,21 +1,4 @@
 # Multi-stage build for Homeschool Hub
-FROM node:20-alpine AS frontend-builder
-
-# Set working directory for frontend build
-WORKDIR /app/frontend
-
-# Copy frontend package files
-COPY frontend/package*.json ./
-
-# Install frontend dependencies
-RUN npm ci --only=production
-
-# Copy frontend source code
-COPY frontend/ ./
-
-# Build the frontend
-RUN npm run build
-
 # Python backend stage
 FROM python:3.11-slim
 
